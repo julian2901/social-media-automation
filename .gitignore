@@ -1,0 +1,71 @@
+# ==========================================================
+#  Secretos: NUNCA se suben. Aquí no hay excepciones.
+# ==========================================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.backup
+
+# Credenciales y tokens de las APIs (Meta, Google, TikTok, Firebase)
+id ig.txt
+token_credencial.json
+token_tiktok.json
+token_*.json
+credenciales_youtube.json
+client_secret*.json
+serviceAccount*.json
+
+# ==========================================================
+#  Estado local y datos personales (IDs de tus publicaciones)
+# ==========================================================
+registro_*.json
+lote_*.json
+lote_*.txt
+historial.json
+cola.json
+calendario.json
+progreso_generador.json
+registro.txt
+
+# ==========================================================
+#  Entornos virtuales y caché de Python
+# ==========================================================
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ==========================================================
+#  Medios y paquetes pesados (van a Drive/Firebase, no a Git)
+# ==========================================================
+*.mp4
+*.mov
+*.mkv
+*.mp3
+*.wav
+*.zip
+*.7z
+*.rar
+spotify/
+clips_finales/
+textos_clips/
+miniaturas/
+audio_temporal/
+descripcionClips/
+
+# ==========================================================
+#  Sistema y editores
+# ==========================================================
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.log

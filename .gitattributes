@@ -1,0 +1,13 @@
+# Normaliza los finales de línea al clonar en cualquier sistema.
+* text=auto eol=lf
+
+# Los .bat de Windows necesitan CRLF para ejecutarse bien.
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Archivos que Git debe tratar como binarios.
+*.mp4 binary
+*.mp3 binary
+*.zip binary
+*.png binary
+*.jpg binary

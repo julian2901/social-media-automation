@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">                              <!-- Le decimos al navegador que use las letras con tilde y la eñe. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <!-- Le decimos que se acomode al ancho de la pantalla, como una hoja que estira. -->
+  <title>Panel de clips</title>  <!-- Este es el nombre que sale arriba en la pestaña del navegador. -->
+  <style>
+    :root {  <!-- Aquí empezar la lista de colores y tamaños que vamos a usar en toda la página. -->
+      --verde: #2f7d5d;  /* El color principal, un verde tranquilo como el de la marca. */
+      --verde-claro: #e8f3ee;  /* Un verde muy clarito para pintar cajitas de todo bien. */
+      --rojo: #b3362f;  /* El color de los errores, un rojo suave que no asusta. */
+      --rojo-claro: #fbeceb;  /* Un rojo muy clarito para pintar cajitas de problema. */
+      --ambar: #9a6b00;  /* El color de lo que está en camino, un amarillo que representa trabajo pendiente. */
+      --ambar-claro: #fdf4e0;  /* Un amarillo clarito para las cajitas de advertencia. */
+      --gris: #6b7280;  /* El color de las letras que no son tan importantes. */
+      --borde: #e3e5e8;  /* El color de las líneas que separan las cajitas. */
+      --fondo: #f6f7f8;  /* El color de fondo de toda la página, un gris clarito para descansar la vista. */
+    }
+    * { box-sizing: border-box; }  /* Le decimos que el ancho y el alto de las cajitas incluyan su propio borde. -->
+    body {  /* Ahora empezamos a pintar todo el papel de la página. */
+      margin: 0;  /* Le quitamos el espacio en blanco que el navegador pone alrededor de todo. */
+      font-family: -apple-system, "Segoe UI", Roboto, sans-serif;  /* Le decimos qué letra usar, una que se vea limpia en el computador. */
+      background: var(--fondo);  /* Pintamos el fondo del color clarito que elegimos. */
+      color: #1f2933;  /* Ponemos las letras de un gris oscuro, para que se lean bien. */
+    }
+    .envoltura {  /* Esta es la cajita grande que abraza todo el contenido de la página. */
+      max-width: 1180px;  /* Le decimos que no se estire más que este ancho, para que no quede gigante. */
+      margin: 0 auto;  /* La dejamos centrada en la pantalla, con el mismo espacio a los lados. */
+      padding: 28px 20px 60px;  /* Le ponemos un poquito de aire por dentro, más abajito que arriba. */
+    }
+    header {  /* Esta es la parte de arriba, donde va el nombre del panel. */
+      display: flex;  /* Le decimos que las cosas de aquí se acomoden en una fila, uno al lado del otro. */
+      align-items: center;  /* Les decimos que se-centren en una línea recta, como soldados. */
+      justify-content: space-between;  /* Mandamos el título a la izquierda y el botón a la derecha. */
+      gap: 16px;  /* Le ponemos un espacio de aire entre el título y el botón. */
+      flex-wrap: wrap;  /* Si no caben en una fila, que se baje a la siguiente en vez de aplastarse. */
+      margin-bottom: 22px;  /* Le dejamos un huequito antes de la primera cajita de abajo. */
+    }
+    h1 { font-size: 22px; margin: 0; letter-spacing: -0.2px; }  /* El título grande de arriba. */
+    h1 small { display: block; font-size: 13px; color: var(--gris); font-weight: 400; margin-top: 3px; }  /* La letrita chiquita debajo del título. */
+    h2 { font-size: 15px; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--gris); }  /* Los títulos de cada sección. */
+    .tarjetas {  /* Esta cajita sostiene los cuatro numeritos de arriba. */
+      display: grid;  /* Les decimos que se acomoden en filas y columnas iguales. */
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));  /* Que quepan tantas columnas como quepan, sin bajar de 160 pixeles. */
+      gap: 12px;  /* El aire que queda entre cada numerito. */
+      margin-bottom: 20px;  /* Un huequito antes de la siguiente sección. */
+    }
+    .tarjeta {  /* Cada numerito de arriba es una cajita con borde y fondo blanco. */
+      background: #fff;  /* La pintamos de blanco para que resalte sobre el fondo gris. */
+      border: 1px solid var(--borde);  /* Le ponemos una línea delgada alrededor. */
+      border-radius: 10px;  /* Le redondeamos las esquinas para que se vea suave. */
+      padding: 14px 16px;  /* Le ponemos aire por dentro. */
+    }
+    .tarjeta .numero { font-size: 26px; font-weight: 600; line-height: 1.1; }  /* El número grande de la cajita. */
+    .tarjeta .etiqueta { font-size: 12px; color: var(--gris); margin-top: 4px; }  /* La letrita que explica de qué es el número. */
+    .panel {  /* Esta es una cajita blanca que agrupa un bloque de la página. */
+      background: #fff;  /* La pintamos de blanco. -->
+      border: 1px solid var(--borde);  /* Le ponemos una línea delgada alrededor. */
+      border-radius: 10px;  /* Le redondeamos las esquinas. */
+      padding: 16px;  /* Le ponemos aire por dentro. */
+      margin-bottom: 16px;  /* Un huequito antes de la siguiente cajita. */
+    }
+    .estado-token {  /* La cajita que dice si el permiso de Facebook está vivo. */
+      display: flex;  /* Las cosas de aquí van en una fila. */
+      align-items: center;  /* Se centran en una línea recta. */
+      gap: 10px;  /* Aire entre el puntito y el texto. */
+      font-size: 14px;  /* Letrita mediana, fácil de leer. */
+    }
+    .punto { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }  /* El puntito redondo de color. */
+    .punto.ok { background: var(--verde); }  /* Puntito verde cuando todo está bien. */
+    .punto.vencido, .punto.sin_configurar { background: var(--rojo); }  /* Puntito rojo cuando hay un problema. */
+    .punto.sin_conexion, .punto.ambar { background: var(--ambar); }  /* Puntito amarillo cuando no sabemos bien qué pasa. */
+    .acciones {  /* La cajita donde viven los tres botones. */
+      display: flex;  /* Los botones van en una fila. */
+      flex-wrap: wrap;  /* Si no caben, que se bajen a la siguiente fila. */
+      gap: 10px;  /* Aire entre los botones. */
+      margin-bottom: 14px;  /* Un huequito antes de la consola de texto. */
+    }
+    button {  /* Ahora estilizamos todos los botones de la página. */
+      font: inherit;  /* Que usen la misma letra que el resto de la página. */
+      font-size: 14px;  /* Letrita mediana. */
+      padding: 9px 14px;  /* Espaciado interno para que el texto no quede apretado. */
+      border-radius: 8px;  /* Bordes redondeados. */
+      border: 1px solid var(--borde);  /* Una línea delgada alrededor. */
+      background: #fff;  /* Fondo blanco. */
+      color: var(--verde);  /* Letra verde, el color de la marca. */
+      cursor: pointer;  /* Le decimos que el cursor se vuelva una manita cuando pase encima. */
+      transition: background 0.15s, border-color 0.15s;  /* Que el color cambie suavecito al pasar el mouse. */
+    }
+    button:hover:not(:disabled) { background: var(--verde-claro); border-color: var(--verde); }  /* Cuando el mouse pasa encima, se pone verde clarito. */
+    button:disabled { opacity: 0.5; cursor: not-allowed; }  /* Cuando el botón está apagado, se ve más transparente y no se puede apretar. */
+    button.principal { background: var(--verde); color: #fff; border-color: var(--verde); }  /* El botón más importante, pintado de verde. */
+    button.principal:hover:not(:disabled) { background: #25654a; }  /* Al pasar el mouse se pone más verde oscuro. */
+    .consola {  /* Esta es la cajita negra donde se ven las frases del programa. */
+      background: #11161c;  /* La pintamos casi negra, como una pantalla de computador viejo. */
+      color: #c9d4de;  /* Las letras son claritas para que se lean bien sobre el fondo oscuro. */
+      border-radius: 8px;  /* Le redondeamos las esquinas. */
+      padding: 12px 14px;  /* Le ponemos aire por dentro. */
+      font-family: "Cascadia Mono", Consolas, "Courier New", monospace;  /* Usamos una letra de computador, donde todos los días tienen el mismo ancho. */
+      font-size: 12.5px;  /* Letrita chica, porque aquí van muchas frases. */
+      line-height: 1.55;  /* Un poquito de aire entre renglones para que no se encimen. */
+      height: 240px;  /* Que la cajita tenga siempre ese alto, para que la página no salte mientras escribe. */
+      overflow-y: auto;  /* Si las frases no caben, aparece una barrita para subir y bajar. */
+      white-space: pre-wrap;  /* Si una frase es muy larga, la partimos en varias líneas en vez de cortarla. */
+    }
+    .consola.vacia { color: #5b6672; }  /* Cuando la consola está vacía, sus letras se ven más apagadas. */
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }  /* La tabla usa todo el ancho y junta sus bordes para que se vea limpia. */
+    th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--borde); }  /* Cada celda con aire y una rayita debajo. */
+    th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gris); font-weight: 600; }  /* Los encabezados, con letrita chiquita y gris. */
+    tbody tr:last-child td { border-bottom: none; }  /* La última fila no lleva rayita, para cerrar la tabla bonito. */
+    .clip { font-weight: 500; }  /* El nombre del clip, un poquito más grueso. */
+    .marca {  /* Cada lucecita verde o roja que dice si algo está listo. */
+      display: inline-block;  /* Que se comporte como una cajita chiquita. */
+      min-width: 22px;  /* Que siempre tenga el mismo ancho, para que los textos queden parejos. */
+      text-align: center;  /* Que el sí o el no queden en el medio. */
+      padding: 2px 6px;  /* Aire alrededor del sí o el no. */
+      border-radius: 5px;  /* Esquinas suaves. */
+      font-size: 12px;  /* Letrita chica. */
+      font-weight: 600;  /* Un poquito más gruesa para que se note. */
+    }
+    .marca.si { background: var(--verde-claro); color: var(--verde); }  /* La lucecita verde de todo bien. */
+    .marca.no { background: var(--rojo-claro); color: var(--rojo); }  /* La lucecita roja de lo que falta. */
+    .marca.medio { background: var(--ambar-claro); color: var(--ambar); }  /* La lucecita amarilla de lo que está en camino. */
+    .rutas { font-size: 12px; color: var(--gris); line-height: 1.7; word-break: break-all; }  /* Las rutas de las carpetas, con letrita chiquita y gris. */
+    .ruta { color: var(--verde); }  /* La parte de la ruta que es el nombre de la carpeta va en verde. */
+    .aviso {  /* La cajita de arriba que avisa de algo importante. */
+      background: var(--ambar-claro);  /* Fondo amarillo clarito. */
+      border: 1px solid #e8d5a3;  /* Una línea delgada del mismo tono. */
+      border-radius: 8px;  /* Esquinas suaves. */
+      padding: 10px 13px;  /* Aire por dentro. */
+      font-size: 13.5px;  /* Letrita mediana. */
+      margin-bottom: 16px;  /* Un huequito antes de lo demás. */
+    }
+  </style>
+</head>
+<body>
+  <div class="envoltura">  <!-- Abrimos la cajita grande que abraza todo. -->
+    <header>  <!-- Empezamos la parte de arriba de la página. -->
+      <h1>  <!-- Abrimos el título grande. -->
+        Panel de clips
+        <small>Un solo lugar para generar textos y publicar en YouTube y Facebook</small>  <!-- La letrita chiquita que explica para qué sirve. -->
+      </h1>  <!-- Cerramos el título. -->
+      <button onclick="cargarEstado()">  <!-- Este botón recarga los datos cuando lo apretamos. -->
+        Actualizar
+      </button>  <!-- Cerramos el botón. -->
+    </header>  <!-- Cerramos la parte de arriba. -->
+
+    <div id="aviso" class="aviso" style="display:none"></div>  <!-- Esta cajita aparece sola si hay un problema, y se esconde si todo anda bien. -->
+
+    <div class="tarjetas" id="tarjetas">  <!-- Aquí van a aparecer los cuatro numeritos. -->
+      <div class="tarjeta"><div class="numero">…</div><div class="etiqueta">Cargando</div></div>  <!-- Los puntos suspensivos son el lugar donde luego irá el número de verdad. -->
+    </div>  <!-- Cerramos la cajita de los numeritos. -->
+
+    <div class="panel">  <!-- Abrimos la cajita de los botones. -->
+      <h2>Acciones</h2>  <!-- El título de esta sección. -->
+      <div class="acciones">  <!-- Abrimos la fila de botones. -->
+        <button class="principal" id="btn-textos" onclick="lanzar('textos')">Generar textos con Gemini</button>  <!-- El botón que escribe título, descripción y hashtags. -->
+        <button id="btn-youtube" onclick="lanzar('youtube')">Programar en YouTube</button>  <!-- El botón que manda los videos a YouTube. -->
+        <button id="btn-facebook" onclick="lanzar('facebook')">Programar lote en Facebook</button>  <!-- El botón que agenda los cinco Reels en Facebook. -->
+      </div>  <!-- Cerramos la fila de botones. -->
+      <div class="estado-token" id="estado-token">  <!-- Esta línea dirá si el permiso de Facebook sigue vivo. -->
+        <span class="punto"></span>  <!-- El puntito de color. -->
+        <span>Revisando el permiso de Facebook…</span>  <!-- El texto que acompaña al puntito. -->
+      </div>  <!-- Cerramos la línea del permiso. -->
+      <div class="acciones" style="margin-top:12px">  <!-- Abrimos una segunda fila de botones para el permiso. -->
+        <button id="btn-token" onclick="lanzar('token')">Renovar el permiso de Facebook</button>  <!-- Este botón pide un token nuevo por si el de ahora está por vencer. -->
+      </div>  <!-- Cerramos esa segunda fila. -->
+      <div class="consola vacia" id="consola" style="margin-top:14px">Los mensajes de cada acción aparecerán aquí.</div>  <!-- La cajita negra donde se ven las frases del programa. -->
+    </div>  <!-- Cerramos la cajita de los botones. -->
+
+    <div class="panel">  <!-- Abrimos la cajita de la tabla de videos. -->
+      <h2>Clips</h2>  <!-- El título de esta sección. -->
+      <table>  <!-- Empezamos la tabla. -->
+        <thead>  <!-- Empezamos el cinto de encabezados de la tabla. -->
+          <tr>  <!-- Empezamos la fila de encabezados. -->
+            <th>Clip</th>  <!-- La columna que dice el nombre del video. -->
+            <th>Título</th>  <!-- La columna que dice si el título ya existe. -->
+            <th>Descripción</th>  <!-- La columna que dice si la descripción ya existe. -->
+            <th>Hashtags</th>  <!-- La columna que dice si los hashtags ya existen. -->
+            <th>YouTube</th>  <!-- La columna que dice si ya está en YouTube. -->
+            <th>Facebook</th>  <!-- La columna que dice si ya está en Facebook. -->
+          </tr>  <!-- Cerramos la fila de encabezados. -->
+        </thead>  <!-- Cerramos el cinto de encabezados. -->
+        <tbody id="filas">  <!-- Aquí entra el contenido de la tabla, fila por fila. -->
+          <tr><td colspan="6" style="color:var(--gris)">Cargando…</td></tr>  <!-- Marcador de posición mientras llegan los datos del servidor. -->
+        </tbody>  <!-- Cerramos el cuerpo de la tabla. -->
+      </table>  <!-- Cerramos la tabla. -->
+      <div class="rutas" id="rutas" style="margin-top:14px"></div>  <!-- Aquí se muestran las carpetas donde se leen y se guardan las cosas. -->
+    </div>  <!-- Cerramos la cajita de la tabla. -->
+  </div>  <!-- Cerramos la cajita grande. -->
+
+  <script>
+    const botones = { textos: null, youtube: null, facebook: null, token: null };  // Guardamos los botones para poder apagarlos y prenderlos.
+    const vigilando = { textos: null, youtube: null, facebook: null, token: null };  // Guardamos el reloj de cada acción para saber si ya terminó.
+
+    function mostrarAviso(texto) {  // Esta función enseña la cajita amarilla de arriba.
+      const aviso = document.getElementById('aviso');  // Buscamos esa cajita en la página.
+      aviso.textContent = texto;  // Le ponemos el texto que le pasamos.
+      aviso.style.display = 'block';  // La hacemos aparecer, porque estaba escondida.
+    }  // Cerramos la función.
+
+    function limpiarAviso() {  // Esta función esconde la cajita amarilla cuando ya no hay nada que avisar.
+      document.getElementById('aviso').style.display = 'none';  // La volvemos a esconder.
+    }  // Cerramos la función.
+
+    async function cargarEstado() {  // Esta función pregunta al servidor cómo van las cosas y pinta la respuesta.
+      limpiarAviso();  // Borramos cualquier aviso viejo antes de preguntar de nuevo.
+      try {  // Intentamos preguntar, preparados por si el servidor está apagado.
+        const respuesta = await fetch('/api/estado');  // Le preguntamos al servidor cómo está cada video.
+        const datos = await respuesta.json();  // Convertimos lo que nos contestó en algo que javascript entiende.
+        if (datos.error) {  // Si el servidor nos dijo que falta algo, lo mostramos arriba.
+          mostrarAviso(datos.error);  // Ponemos el mensaje en la cajita amarilla.
+          return;  // Salimos de la función porque no hay nada más que pintar.
+        }
+        pintarTarjetas(datos);  // Llamamos a la función que dibuja los cuatro numeritos.
+        pintarTabla(datos.clips);  // Llamamos a la función que dibuja la tabla de videos.
+        pintarToken(datos.token_meta);  // Llamamos a la función que dibuja la lucecita del permiso.
+        pintarRutas(datos);  // Llamamos a la función que escribe las carpetas.
+      } catch (error) {  // Si ni siquiera pudimos preguntar, lo decimos arriba.
+        mostrarAviso('No pude hablar con el panel: ' + error);  // Ponemos el mensaje de error en la cajita amarilla.
+      }  // Cerramos el manejo de errores.
+    }  // Cerramos la función.
+
+    function pintarTarjetas(datos) {  // Esta función dibuja los cuatro numeritos de arriba.
+      const cajas = [  // Armamos la lista de los cuatro numeritos con su texto.
+        { numero: datos.total, etiqueta: 'Clips en la carpeta' },  // Cuántos videos hay en total.
+        { numero: datos.listos, etiqueta: 'Con los tres textos' },  // Cuántos ya tienen título, descripción y hashtags.
+        { numero: datos.en_youtube, etiqueta: 'En YouTube' },  // Cuántos ya están programados en YouTube.
+        { numero: datos.en_facebook, etiqueta: 'En Facebook' },  // Cuántos ya están programados en Facebook.
+      ];  // Cerramos la lista.
+      document.getElementById('tarjetas').innerHTML = cajas.map(c =>  // Cambiamos todo el contenido de la cajita por los cuatro numeritos nuevos.
+        `<div class="tarjeta"><div class="numero">${c.numero}</div><div class="etiqueta">${c.etiqueta}</div></div>`  // Dibujamos un numerito con su letrita.
+      ).join('');  // Juntamos los cuatro dibujitos en un solo texto, sin espacios de más.
+    }  // Cerramos la función.
+
+    function marca(ok, etiqueta) {  // Esta función dibuja el cuadrito verde o rojo de cada celda, con el texto que le pidamos.
+      const clase = ok ? 'si' : 'no';  // Decidimos si el cuadrito va verde o rojo.
+      const texto = ok ? etiqueta : 'Falta';  // Si está listo mostramos la fecha que le pasaron; si no, la palabra Falta.
+      const titulo = ok ? 'Listo' : 'Todavía no';  // Decidimos qué dice cuando el mouse pasa por encima del cuadrito.
+      return `<span class="marca ${clase}" title="${titulo}">${escapar(texto)}</span>`;  // Devolvemos el cuadrito ya pintado, con el texto adentro.
+    }  // Cerramos la función.
+
+    function pintarTabla(clips) {  // Esta función dibuja una fila por cada video.
+      const cuerpo = document.getElementById('filas');  // Buscamos donde va el contenido de la tabla.
+      if (!clips.length) {  // Si no hay ningún video en la carpeta...
+        cuerpo.innerHTML = '<tr><td colspan="6" style="color:var(--gris)">No hay videos MP4 en la carpeta.</td></tr>';  // Avisamos que la caja está vacía.
+        return;  // Salimos porque no hay nada que dibujar.
+      }  // Cerramos el caso de la carpeta vacía.
+      cuerpo.innerHTML = clips.map(c => {  // Dibujamos una fila por cada clip, uno por uno.
+        const fechaYt = c.youtube ? (c.youtube.publish_at || '').slice(0, 10) : '';  // Sacamos solo el día de la fecha de YouTube, sin la hora.
+        const fechaFb = c.facebook ? (c.facebook.facebook_scheduled_at || '').slice(0, 10) : '';  // Sacamos el día de la fecha de Facebook, que guarda su llave con el .mp4.
+        return `<tr>  // Empezamos una fila de la tabla.
+          <td class="clip">${escapar(c.video)}</td>  // La celda con el nombre del video.
+          <td>${marca(c.titulo, 'Listo')}</td>  // La celda que dice si el título ya existe.
+          <td>${marca(c.descripcion, 'Listo')}</td>  // La celda que dice si la descripción ya existe.
+          <td>${marca(c.hashtags, 'Listo')}</td>  // La celda que dice si los hashtags ya existen.
+          <td>${marca(fechaYt, fechaYt)}</td>  // La celda que muestra el día en que se publica en YouTube.
+          <td>${marca(fechaFb, fechaFb)}</td>  // La celda que muestra el día en que se publica en Facebook.
+        </tr>`;  // Cerramos la fila.
+      }).join('');  // Juntamos todas las filas en un solo texto y lo metemos en la tabla de una sola vez.
+    }  // Cerramos la función.
+
+    function escapar(texto) {  // Esta función evita que un nombre de video rompa el html de la página.
+      return String(texto).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));  // Cambiamos los carácteres peligrosos por su versión tranquila.
+    }  // Cerramos la función.
+
+    function pintarToken(token) {  // Esta función dibuja la línea con el puntito del permiso de Facebook.
+      const linea = document.getElementById('estado-token');  // Buscamos la línea donde va el puntito.
+      const clase = token.estado === 'ok' ? 'ok' : token.estado;  // Si todo está bien va verde; si no, el color depende del problema.
+      let texto = `<span class="punto ${clase}"></span><span><strong>Permiso de Facebook:</strong> ${escapar(token.detalle)}</span>`;  // Dibujamos el puntito y su texto explicativo.
+      if (token.renovado) {  // Si el programa acaba de renovar el token...
+        texto += ' <span class="marca si">renovado ahora</span>';  // ...le avisamos que fue eso lo que pasó, para que no se asuste.
+      }  // Cerramos el aviso de renovación.
+      linea.innerHTML = texto;  // Dejamos el nuevo texto en la línea.
+    }  // Cerramos la función.
+
+    function pintarRutas(datos) {  // Esta función escribe abajo las carpetas que está usando el programa.
+      document.getElementById('rutas').innerHTML =  // Cambiamos el contenido de la cajita de rutas.
+        `<div><strong>Videos:</strong> <span class="ruta">${escapar(datos.carpeta_videos)}</span></div>` +  // Escribimos dónde están los videos.
+        `<div><strong>Textos:</strong> <span class="ruta">${escapar(datos.carpeta_textos)}</span></div>`;  // Y dónde están los tres textos de cada video.
+    }  // Cerramos la función.
+
+    async function lanzar(clave) {  // Esta función es la que corre cuando apretamos un botón.
+      botones[clave].disabled = true;  // Apagamos el botón para que no lo aprieten dos veces.
+      const consola = document.getElementById('consola');  // Buscamos la cajita negra donde van los mensajes.
+      consola.classList.remove('vacia');  // Le quitamos el color apagado, porque ahora sí va a tener texto.
+      consola.textContent = 'Abriendo el programa, espera un momento…';  // Escribimos un primer mensajito para que el usuario sepa que sí lo escuchamos.
+      try {  // Intentamos pedirle al servidor que abra el programa, preparados por si algo falla.
+        const respuesta = await fetch('/api/trabajo/' + clave, { method: 'POST' });  // Le mandamos la orden de empezar ese trabajo.
+        const datos = await respuesta.json();  // Leemos lo que nos contestó.
+        if (!respuesta.ok) { throw new Error(datos.error || 'El panel no pudo arrancar el programa.'); }  // Si el servidor se negó, tiramos el error.
+        vigilar(clave);  // Llamamos a la función que se queda mirando cómo va el trabajo.
+      } catch (error) {  // Si ni siquiera pudimos pedir el trabajo, lo decimos en la cajita.
+        consola.textContent = 'No se pudo arrancar: ' + error.message;  // Escribimos el motivo del problema.
+        botones[clave].disabled = false;  // Volvemos a prender el botón para que lo puedan intentar otra vez.
+      }  // Cerramos el manejo de errores.
+    }  // Cerramos la función.
+
+    function vigilar(clave) {  // Esta función se queda preguntando cada cuánto va el trabajo, hasta que termine.
+      const consola = document.getElementById('consola');  // Buscamos la cajita negra de los mensajes.
+      if (vigilando[clave]) clearTimeout(vigilando[clave]);  // Si ya había un reloj esperando, lo paramos para no preguntar dos veces.
+      const revisar = async () => {  // Esta es la parte que realmente pregunta al servidor.
+        const respuesta = await fetch('/api/trabajo/' + clave);  // Le preguntamos cómo va ese trabajo.
+        const datos = await respuesta.json();  // Leemos su respuesta.
+        if (!datos.existe) {  // Si el servidor no conoce ese trabajo, algo salió mal.
+          consola.textContent = 'El panel perdió el rastro del trabajo.';  // Avisamos en la cajita.
+          botones[clave].disabled = false;  // Prendemos el botón otra vez.
+          return;  // Salimos porque ya no hay nada que vigilar.
+        }  // Cerramos el caso del trabajo perdido.
+        consola.textContent = datos.lineas.join('\n') || 'Esperando los primeros mensajes…';  // Pintamos todas las frases que ha dicho hasta ahora.
+        consola.scrollTop = consola.scrollHeight;  // Bajamos hasta el final, para que se vea lo último que dijo.
+        if (datos.estado === 'corriendo') {  // Si el dibujante sigue trabajando...
+          vigilando[clave] = setTimeout(revisar, 1500);  // Programamos otra pregunta dentro de un segundo y medio.
+        } else {  // Si ya terminó...
+          botones[clave].disabled = false;  // Volvemos a prender el botón.
+          if (datos.estado === 'termino_ok') {  // Si terminó con el código cero, todo salió bien.
+            consola.textContent += '\n\nListo. Actualizando el tablero…';  // Avisamos que terminó bien.
+            cargarEstado();  // Pedimos los datos frescos para ver los números ya actualizados.
+          }  // Cerramos el caso del éxito.
+        }  // Cerramos la revisión de si sigue trabajando.
+      };  // Cerramos la función interna.
+      revisar();  // Hacemos la primera pregunta ahora mismo, sin esperar.
+    }  // Cerramos la función.
+
+    cargarEstado();  // Cuando la página se abre, buscamos los datos de una vez.
+  </script>
+</body>
+</html>

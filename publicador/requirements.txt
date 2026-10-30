@@ -1,0 +1,14 @@
+# Dependencias del publicador (Meta, YouTube, TikTok, Gemini).
+# Instalar con:  python -m pip install -r requirements.txt
+
+flask>=3.0
+python-dotenv>=1.0
+requests>=2.31
+
+# YouTube
+google-api-python-client>=2.100
+google-auth>=2.23
+google-auth-oauthlib>=1.1
+
+# Textos con Gemini
+google-genai>=1.0
