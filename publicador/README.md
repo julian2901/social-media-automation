@@ -12,7 +12,37 @@ El panel corre en tu propio computador, en `127.0.0.1`. No es público y no nece
 
 ## Generar textos con Gemini
 
-`prueba.py` revisa los MP4 de `META_VIDEO_DIR` y escribe en `META_TEXT_DIR` tres archivos por cada video nuevo: `titulo_`, `descripcion_` y `hashtags_`. Un clip queda anotado en `registro.txt` (dentro de la carpeta de videos) solo cuando los tres archivos quedaron guardados, así un fallo de Gemini no lo marca como hecho.
+`prueba.py` revisa los MP4 de `META_VIDEO_DIR` y escribe en `META_TEXT_DIR` cuatro archivos por cada video nuevo: `titulo_`, `descripcion_`, `hashtags_` y `calificacion_`. Un clip queda anotado en `registro.txt` (dentro de la carpeta de videos) solo cuando los archivos quedaron guardados, así un fallo de Gemini no lo marca como hecho.
+
+### Por qué cada clip suena distinto
+
+Antes el prompt solo recibía el nombre del archivo, y como los clips de un mismo video se llaman casi igual (`VIDEO_clip_0_final.mp4`, `VIDEO_clip_1_final.mp4`...), Gemini no tenía nada que los diferenciara: repetía títulos y descripciones. Ahora el programa le manda el contenido real del clip:
+
+| Fuente | Qué aporta |
+|---|---|
+| `momentos_clave/<video>.json` | La razón por la que se eligió ese fragmento |
+| `transcripciones/<video>.txt` | El texto hablado dentro del clip |
+
+El índice del clip en el nombre (`clip_3`) corresponde a su posición en ese JSON, así que cada clip recibe un fragmento distinto de la transcripción. Además el prompt prohíbe las fórmulas fijas (`En la marca sabemos...`), pide una temperatura alta y rechaza títulos ya usados: si Gemini repite uno, el programa reintenta.
+
+Las carpetas de apoyo se buscan junto a la de clips. Si están en otro sitio:
+
+```ini
+MOMENTOS_CLAVE_DIR=C:\ruta\a\momentos_clave
+TRANSCRIPCIONES_DIR=C:\ruta\a\transcripciones
+```
+
+Si un clip no tiene transcripción o su nombre no sigue el patrón `_clip_N_final`, los textos se generan igual, solo con el nombre del archivo: el programa lo avisa en la consola.
+
+### Volver a generar textos viejos
+
+Los clips que están en `registro.txt` se saltan. Para rehacerlos (por ejemplo, para corregir textos repetidos generados antes de este arreglo):
+
+```powershell
+.\.venv\Scripts\python.exe .\prueba.py --forzar
+```
+
+Con `--forzar` no se toca `registro.txt` y se sobrescriben los `.txt` de cada clip.
 
 Si Gemini falla, el programa reintenta hasta diez veces con pausas crecientes de diez segundos. Para probarlo sin usar la carpeta real:
 
@@ -112,7 +142,7 @@ Esta programación de Facebook envía el video binario directamente a los servid
 
 - `abrir_panel.bat`: abre el navegador y levanta el panel.
 - `panel.py` y `templates/panel.html`: el panel web y su página.
-- `prueba.py`: genera los tres textos de cada clip con Gemini.
+- `prueba.py`: genera título, descripción, hashtags y calificación de cada clip con Gemini.
 - `subir_clips_yt.py`: programa los clips en YouTube.
 - `publicar_clips_meta.py`: comando principal para preparar, programar y cancelar lotes de Facebook.
 - `subir_clips_meta.py`: funciones internas de conexión y publicación mediante la API de Meta.
